@@ -1,0 +1,1 @@
+Sahnemd is the standard init system for the Sahne Karnal kernel, developed by Sahne Dünya. It's compatible with the Sahne64 API. If you've looked at the Sahne Karnal project, you'll know it's a standalone operating system project, and if you know that, you'll also know it's a standalone Rust kernel init system.
