@@ -1,13 +1,13 @@
-// src/service.rs (GÜNCELLENMİŞ)
+// src/service.rs
 
 use crate::syscalls::TaskId;
 
 /// Bir hizmetin hangi koşullarda yeniden başlatılacağını belirler.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RestartPolicy {
-    Always,      // Her sonlanmada yeniden başlat (başarılı/başarısız fark etmez)
-    OnFailure,   // Sadece hata koduyla (exit status != 0) sonlanırsa yeniden başlat
-    Never,       // Asla yeniden başlatma (Varsayılan init sistemi davranışı)
+    Always,      
+    OnFailure,   
+    Never,       
 }
 
 /// Bir hizmetin olası durumları.
@@ -27,7 +27,7 @@ pub struct Service {
     pub path: &'static str,             
     pub args: &'static [&'static str],  
     pub state: ServiceState,            
-    pub restart_policy: RestartPolicy, // YENİ: Yeniden başlatma politikası
+    pub restart_policy: RestartPolicy, 
 }
 
 impl Service {
@@ -35,14 +35,14 @@ impl Service {
         name: &'static str, 
         path: &'static str, 
         args: &'static [&'static str],
-        restart_policy: RestartPolicy, // YENİ: Parametre eklendi
+        restart_policy: RestartPolicy,
     ) -> Self {
         Service {
             name,
             path,
             args,
             state: ServiceState::Stopped,
-            restart_policy, // Yeni alan atandı
+            restart_policy,
         }
     }
 }
