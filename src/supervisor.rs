@@ -28,22 +28,31 @@ pub fn run_supervisor_loop(services: &mut [DependencyService], control_channel: 
                     ControlMessage::Shutdown => {
                         println!("[SUP] Kapatma komutu alındı. Döngüden çıkılıyor.");
                         break; // Döngüyü kır, sistem kapanışına git
+
+                        for dep_service in services.iter_mut() {
+                            if let ServiceState::Running(id) = dep_service.service.state {
+                                println!("[SUP] -> Görev sonlandırılıyor: {} ({})", dep_service.service.name, id);
+                            task_kill(id);
+                            }
+                        }
                     }
                     ControlMessage::RestartService(target_id) => {
                         // Basitçe hizmeti durdurulmuş (Stopped) duruma getir. Yeniden başlatma mantığı onu tekrar başlatacaktır.
                         if let Some(dep_service) = services.iter_mut().find(|s| {
                             if let ServiceState::Running(id) = s.service.state { id == target_id } else { false }
                         }) {
-                            println!("[SUP] Hizmet yeniden başlatma isteği: {}", dep_service.service.name);
-                            // Görevi sonlandırmak için SYSCALL_TASK_KILL kullanılabilir. 
-                            // Şimdilik sadece durumu Stopped yapalım ve görev sonlanmasını bekleyelim.
-                            dep_service.service.state = ServiceState::Stopped; 
-                            // Not: Gerçekte burada SYSCALL_TASK_KILL (örneğin 104) çağrılmalıdır.
+                            println!("[SUP] Hizmet yeniden başlatma isteği: {}", dep_service.service.name)
+                            let result = task_kill(target_id);
+                            if result == 0 {
+                                // Durumu Stopped yaparsak, yeniden başlatma mantığı hemen yakalar ve backoff ayarlar.
+                                // task_kill başarılıysa, TASK_WAIT bir sonraki adımda yakalar.
+                            } else {
+                                eprintln!("[SUP] Hata: Görev sonlandırılamadı. Hata Kodu: {}", result);
+                            }
                         } else {
                             eprintln!("[SUP] Hata: Yeniden başlatılmak istenen görev bulunamadı: {}", target_id);
                         }
                     }
-                    // ... Diğer mesajlar buraya eklenebilir ...
                     _ => eprintln!("[SUP] Bilinmeyen/İşlenmeyen Kontrol Mesajı: {:?}", message),
                 }
             },
@@ -70,3 +79,4 @@ pub fn run_supervisor_loop(services: &mut [DependencyService], control_channel: 
     
     task_exit(0); 
 }
+
