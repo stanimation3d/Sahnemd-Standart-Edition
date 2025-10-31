@@ -17,12 +17,14 @@ impl fmt::Display for TaskId {
 pub mod sys_const {
     pub const SYSCALL_TASK_SPAWN: u64 = 3;
     pub const SYSCALL_TASK_EXIT: u64 = 4;
+    pub const SYSCALL_TASK_SLEEP: u64 = 10;
+    pub const SYSCALL_GET_SYSTEM_TIME: u64 = 16;
     pub const SYSCALL_GET_TASK_ID: u64 = 9;
-    pub const SYSCALL_TASK_SLEEP: u64 = 10; // YENİ EKLENDİ
-    pub const SYSCALL_GET_SYSTEM_TIME: u64 = 16; // YENİ EKLENDİ
     pub const SYSCALL_TASK_YIELD: u64 = 101;
     pub const SYSCALL_TASK_WAIT: u64 = 105;
-}
+    pub const SYSCALL_TASK_KILL: u64 = 104; // YENİ
+    pub const SYSCALL_CHANNEL_CREATE: u64 = 106;
+    pub const SYSCALL_CHANNEL_RECEIVE: u64 = 109;
 
 // --- Düşük Seviyeli Syscall Fonksiyonu (Değişmedi) ---
 #[link(name = "sahne64_kernel", kind = "static")]
@@ -76,5 +78,15 @@ pub fn task_wait(task_id: Option<TaskId>, status_ptr: *mut u64) -> Result<TaskId
         Ok(TaskId(result))
     } else {
         Err(result)
+    }
+}
+
+pub fn task_kill(task_id: TaskId) -> u64 {
+    unsafe {
+        syscall6(
+            sys_const::SYSCALL_TASK_KILL,
+            task_id.0,         
+            0, 0, 0, 0, 0
+        )
     }
 }
